@@ -1,12 +1,14 @@
 FROM python:3.13-slim
 
 RUN apt-get update && apt-get install -y \
+    gcc \
+    libffi-dev \
     cron \
     bash \
     traceroute \
     iputils-ping \
     curl \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

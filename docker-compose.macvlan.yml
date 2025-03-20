@@ -1,9 +1,17 @@
+# MacVLAN network configuration for Docker Compose
+# This is my recommended way to run the container in a Docker environment
+# As it allows the container to have its own IP address on the network
+# Plus provide ability to have fireawall rules to restrict access to other resources on the network.
+
 services:
     unifi-ddns-cron:
         image: "uguler/unifi-firewall-ddns-sync:latest"
         # supported platforms: linux/amd64, linux/arm64, linux/arm/v7
         # platform: linux/amd64
         container_name: unifi-ddns-cron
+        networks:
+            management-vlan:
+                ipv4_address: 192.168.0.10
         stop_grace_period: 2s
         environment:
             CRON_MINS: "${CRON_MINS}"
@@ -26,3 +34,12 @@ services:
             interval: ${HEALTHCHECK_INTERVAL}
             timeout: ${HEALTHCHECK_TIMEOUT}
             retries: ${HEALTHCHECK_RETRIES}
+networks:
+    management-vlan:
+        driver: macvlan
+        driver_opts:
+            parent: eth0.1
+        ipam:
+            config:
+                - subnet: 192.168.0.0/24
+                  gateway: 192.168.0.1

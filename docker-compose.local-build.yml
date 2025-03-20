@@ -1,5 +1,8 @@
 services:
     unifi-ddns-cron:
+        build:
+            context: .
+            dockerfile: Dockerfile
         image: "uguler/unifi-firewall-ddns-sync:latest"
         # supported platforms: linux/amd64, linux/arm64, linux/arm/v7
         # platform: linux/amd64
