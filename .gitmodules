@@ -1,0 +1,13 @@
+
+[submodule "src/py_unifi"]
+	path = src/py_unifi
+	url = git@github.com:umutguler/py-unifi.git
+[submodule "src/py_abstractions"]
+	path = src/py_abstractions
+	url = git@github.com:umutguler/py-abstractions.git
+[submodule "src/py_dns"]
+	path = src/py_dns
+	url = git@github.com:umutguler/py-dns.git
+[submodule "src/py_tokens"]
+	path = src/py_tokens
+	url = git@github.com:umutguler/py-tokens.git
