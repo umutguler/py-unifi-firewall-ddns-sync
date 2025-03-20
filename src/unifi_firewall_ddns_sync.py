@@ -1,8 +1,15 @@
 """Main driver for the UniFi Firewall DDNS Sync application."""
 # from py_dns.src.ddns import DDNS
+import logging
+import warnings
+
 from helpers.arguments import ArgumentHandler
 from helpers.unifi_file_handler import FileHandler
 from py_unifi.api import UnifiApi
+from urllib3.exceptions import InsecureRequestWarning
+
+warnings.simplefilter("ignore", InsecureRequestWarning)
+
 
 DESCRIPTION = """
 UniFi Firewall DDNS Sync
@@ -30,13 +37,17 @@ automatically reflect DNS changes. For more details, refer to the project's docu
 if __name__ == "__main__":
     handler = ArgumentHandler(DESCRIPTION)
     args = handler.parse()
+    logging.basicConfig(level=logging.INFO)
+    logging.info("Starting UniFi Firewall DDNS Sync")
 
     json_file = FileHandler(args.file)
-
     unifi_api = UnifiApi(args.gateway, args.username,
                          args.password, args.site, args.verify_ssl)
 
+    logging.info("Updating firewall rules...")
     for rule in json_file.read_json():
+        logging.info("Updating rule: %s", rule['title'])
         unifi_api.update_firewall_group(rule)
 
+    logging.info("Firewall rules updated successfully")
     unifi_api.logout()
