@@ -1,8 +1,8 @@
 """Main driver for the UniFi Firewall DDNS Sync application."""
 # from py_dns.src.ddns import DDNS
-from src.helpers.arguments import ArgumentHandler
-from src.helpers.unifi_file_handler import FileHandler
-from src.py_unifi.api import UnifiApi
+from helpers.arguments import ArgumentHandler
+from helpers.unifi_file_handler import FileHandler
+from py_unifi.api import UnifiApi
 
 DESCRIPTION = """
 UniFi Firewall DDNS Sync
