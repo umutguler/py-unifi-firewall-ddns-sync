@@ -1,0 +1,26 @@
+services:
+    unifi-ddns-cron:
+        image: "unifi-ddns-cron:latest"
+        container_name: unifi-ddns-cron
+        stop_grace_period: 2s
+        environment:
+            CRON_MINS: "${CRON_MINS}"
+            CRON_HOURS: "${CRON_HOURS}"
+            CRON_DAYS: "${CRON_DAYS}"
+            RUN_ONCE: "${RUN_ONCE}"
+            UNIFI_GATEWAY: "${UNIFI_GATEWAY}"
+            UNIFI_GATEWAY_HTTPS: "${UNIFI_GATEWAY_HTTPS}"
+            UNIFI_USERNAME: "${UNIFI_USERNAME}"
+            UNIFI_PASSWORD: "${UNIFI_PASSWORD}"
+            UNIFI_SITE: "${UNIFI_SITE}"
+            UNIFI_SITE_ID: "${UNIFI_SITE_ID}"
+            UNIFI_NO_VERIFY_SSL: "${UNIFI_NO_VERIFY_SSL}"
+            UNIFI_RULE_FILENAME: "${UNIFI_RULE_FILENAME}"
+        volumes:
+            - ./config:/config/:ro
+        healthcheck:
+            # Using curl with -s (silent), -f (fail on >=400), -k (ignore cert verification)
+            test: ["CMD-SHELL", "curl -sfk https://${UNIFI_GATEWAY} || exit 1"]
+            interval: ${HEALTHCHECK_INTERVAL}
+            timeout: ${HEALTHCHECK_TIMEOUT}
+            retries: ${HEALTHCHECK_RETRIES}
