@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y \
     traceroute \
     iputils-ping \
     curl \
+    procps \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

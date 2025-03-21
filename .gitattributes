@@ -1,0 +1,4 @@
+*.sh eol=lf
+*.py eol=lf
+*.json eol=lf
+*.txt text

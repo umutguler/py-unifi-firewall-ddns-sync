@@ -48,6 +48,10 @@ class ArgumentHandler:
                                  help="Disable SSL certificate verification. " +
                                  "By default, SSL verification is enabled.")
 
+        self.parser.add_argument(
+            '--verbose', '-v', dest="log_level", action='store_const', required=False,
+            default="INFO", const="DEBUG", help='Enable verbose logging')
+
         self.parser.set_defaults(verify_ssl=True)
 
     def _validate_arguments(self, args):

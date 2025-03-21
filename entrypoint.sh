@@ -8,18 +8,28 @@
 
 set -e
 
-echo "[entrypoint.sh] Starting entrypoint..."
+########################################
+# Set timezone if provided in TZ env   #
+########################################
+if [ -n "$TZ" ]; then
+  echo "Setting timezone to $TZ..."
+  ln -snf /usr/share/zoneinfo/"$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
+fi
+
+TIMESTAMP_FORMAT='%Y-%m-%d %H:%M:%S %Z'
+TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+echo "$TIMESTAMP [entrypoint.sh] Starting entrypoint..."
 
 ########################################
 # Copy default configs if not present  #
 ########################################
-
 if [ -d "/app/assets" ] && [ -d "/config" ]; then
   for default_file in /app/assets/*; do
     basefile="$(basename "$default_file")"
     target="/config/$basefile"
     if [ ! -f "$target" ]; then
-      echo "[entrypoint.sh] Copying default config: $basefile -> $target"
+      TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+      echo "$TIMESTAMP [entrypoint.sh] Copying default config: $basefile -> $target"
       cp "$default_file" "$target"
     fi
   done
@@ -53,11 +63,13 @@ else
 fi
 
 if [ "${CRON_MINS}" = "*" ] && [ "${CRON_HOURS}" = "*" ] && [ "${CRON_DAYS}" = "*" ]; then
-  echo "[entrypoint.sh] ERROR: CRON_MINS, CRON_HOURS, CRON_DAYS are all '*' - aborting."
+  TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+  echo "$TIMESTAMP [entrypoint.sh] ERROR: CRON_MINS, CRON_HOURS, CRON_DAYS are all '*' - aborting."
   exit 1
 fi
 
-echo "[entrypoint.sh] CRON schedule => Mins: ${CRON_MINS}, Hours: ${CRON_HOURS}, Days: ${CRON_DAYS}"
+TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+echo "$TIMESTAMP [entrypoint.sh] CRON schedule => Mins: ${CRON_MINS}, Hours: ${CRON_HOURS}, Days: ${CRON_DAYS}"
 echo
 
 ######################
@@ -98,16 +110,19 @@ if [ -n "${UNIFI_RULE_FILENAME}" ]; then
   ARGS+=("--file" "/config/${UNIFI_RULE_FILENAME}")
 fi
 
-echo "[entrypoint.sh] Arguments built."
+TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+echo "$TIMESTAMP [entrypoint.sh] Arguments built."
 echo
 
 ##########################
 # Optional Immediate Run #
 ##########################
 if [ "${RUN_ONCE}" = "true" ]; then
-  echo "[entrypoint.sh] RUN_ONCE is true; running script once immediately..."
+  TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+  echo "$TIMESTAMP [entrypoint.sh] RUN_ONCE is true; running script once immediately..."
   python /app/src/unifi_firewall_ddns_sync.py "${ARGS[@]}"
-  echo
+  TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+  echo "$TIMESTAMP [entrypoint.sh] Immediate run completed."
 fi
 
 ARGS_STRING=""
@@ -116,16 +131,22 @@ for arg in "${ARGS[@]}"; do
 done
 
 CRON_SCHEDULE="${CRON_MINS} ${CRON_HOURS} ${CRON_DAYS} * *"
-CRON_CMD="${CRON_SCHEDULE} python /app/src/unifi_firewall_ddns_sync.py${ARGS_STRING} > /proc/1/fd/1 2>/proc/1/fd/2"
+CRON_CMD="${CRON_SCHEDULE} root /usr/local/bin/python3 -u /app/src/unifi_firewall_ddns_sync.py${ARGS_STRING} > /proc/1/fd/1 2>&1"
 
-echo "[entrypoint.sh] Setting up crontab schedule:"
+TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+echo "$TIMESTAMP [entrypoint.sh] Setting up crontab schedule:"
 echo "${CRON_SCHEDULE}"
-echo
 
-mkdir -p /var/spool/cron/crontabs
-echo "${CRON_CMD}" > /var/spool/cron/crontabs/root
+echo "${CRON_CMD}" > /etc/cron.d/unifi-ddns
+chmod 0644 /etc/cron.d/unifi-ddns
 
-echo "[entrypoint.sh] Entry point complete. Executing CMD: $@"
-echo
+TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+echo "$TIMESTAMP [entrypoint.sh] Verifying cron setup..."
+cat /etc/cron.d/unifi-ddns
+
+TIMESTAMP=$(date +"$TIMESTAMP_FORMAT")
+echo "$TIMESTAMP [entrypoint.sh] Entry point complete. Executing CMD: $@"
 
 exec "$@"
+echo
+echo
