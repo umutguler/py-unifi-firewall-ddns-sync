@@ -9,6 +9,7 @@ services:
         container_name: unifi-ddns-cron
         stop_grace_period: 2s
         environment:
+            TZ: ${TIMEZONE}
             CRON_MINS: "${CRON_MINS}"
             CRON_HOURS: "${CRON_HOURS}"
             CRON_DAYS: "${CRON_DAYS}"
